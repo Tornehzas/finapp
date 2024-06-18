@@ -5,7 +5,7 @@ import { AnalyticsPage } from "../PAGES/analytics_page/analytics_page";
 import { SettingPage } from "../PAGES/setting_page/setting_page";
 import { Header } from "react-native/Libraries/NewAppScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Image } from "react-native";
+import { Appearance, Image, useColorScheme } from "react-native";
 import { FooterStyle } from "./FooterStyle";
 import { Budget, addCategoryTo } from "../LOGIC/Budget";
 import { useState, useEffect } from "react";
@@ -16,6 +16,7 @@ import { Category } from "../LOGIC/Category";
 import { months } from "../LOGIC/Calendar";
 import { Transaction } from "../LOGIC/Transaction";
 import { payments } from "../LOGIC/Payments";
+
 export const Tab=createBottomTabNavigator()
 export function Tabs(){
   const [refresh, setRefresh]=useState({c:0})
@@ -23,14 +24,17 @@ export function Tabs(){
   const [language, setLanguage]=useState('English')
   const [budget,setBudget]=useState(new Budget())
   const [template,setTemplate]=useState(new Budget())
-const db=SQLite.openDatabase('example.db')
+  let colorTheme=Appearance.getColorScheme()
+const db=SQLite.openDatabase('tomerchant.db')
 function updateBudget(){
     budget.sum=budget.incomesSum-budget.spendingsSum
     setBudget(getCopyBudget(budget))
     db.transaction(tx=>{
       tx.executeSql(
         `UPDATE budget SET ${months[new Date().getMonth()]}=? WHERE year=?`,[JSON.stringify(budget),new Date().getFullYear()],
-        (txObj,resultSet)=>{}
+        (txObj,resultSet)=>{
+          let nR={c:refresh.c+1}
+        setRefresh(nR)}
       )
     })
 }
@@ -84,24 +88,24 @@ function addTransaction(day,month,year,direction,category,value,payInstrument){
                 let nR={c:refresh.c+1}
                 setRefresh(nR)}
              )
-
           }
           else{
             tx.executeSql(
               `SELECT ${months[month-1]} FROM budget WHERE year=?`,[year],
-              (txObj, resultSet)=>{
-                if(!resultSet.rows._array[0][`${months[month-1]}`]){
-                  let b=new Budget()
+              (txObj, resultSet)=>{ 
+                let b=new Budget()
                  addCategoryTo(b,direction,budget[direction][category].categoryName)
                   b[direction][0].value+=value
                   b[direction][0].transactions.push(new Transaction(day,month,year,value,payInstrument))
                   b[`${direction}Sum`]+=value
                   b[direction][0][`${payments[payInstrument].name}value`]=Number((Number(b[direction][0][`${payments[payInstrument].name}value`])+Number(value)).toFixed(2))
                   b[`${direction}${payments[payInstrument].name}Sum`]=Number(b[`${direction}${payments[payInstrument].name}Sum`])+Number(value)
-                  b.sum=b.incomesSum-b.spendingsSum
+                  b.sum=b.incomesSum-b.spendingsSum;
+                if(resultSet.rows._array[0][`${months[month-1]}`]===null){
                   tx.executeSql(
-                    `INSERT INTO budget (${months[month-1]}) VALUES (?) WHERE year=?`,[JSON.stringify(b),year],
-                    (txObj,resultSet)=>{
+                    `UPDATE budget SET ${months[month-1]}=? WHERE year=?`,[JSON.stringify(b),year],
+                    (txObj,resultSet)=>{ 
+                    
                       let nR={c:refresh.c+1}
                        setRefresh(nR)
                     }
@@ -155,7 +159,6 @@ function addTransaction(day,month,year,direction,category,value,payInstrument){
       )
     }) 
   }
- 
 }
 function deleteTransaction(year,month,direction,category,i){
   db.transaction(tx=>{
@@ -168,9 +171,6 @@ function deleteTransaction(year,month,direction,category,i){
         budget[`${direction}${budget[direction][category].transactions[i].payInstrument}Sum`]-=budget[direction][category].transactions[i].value
         budget[direction][category][`${budget[direction][category].transactions[i].payInstrument}value`]-=budget[direction][category].transactions[i].value
         budget[direction][category].transactions.splice(i,1)
-        if(budget[direction][category].transactions.length===0){
-          budget[direction].splice(category,1)
-        }
         updateBudget() 
         let nR={c:refresh.c+1}
         setRefresh(nR)
@@ -182,9 +182,6 @@ function deleteTransaction(year,month,direction,category,i){
       b[`${direction}${b[direction][category].transactions[i].payInstrument}Sum`]-=b[direction][category].transactions[i].value
       b[direction][category][`${b[direction][category].transactions[i].payInstrument}value`]-=b[direction][category].transactions[i].value
       b[direction][category].transactions.splice(category,1)
-      if(b[direction][category].transactions.length===0){
-        b[direction].splice(category,1)
-      }
       b.sum=b.incomesSum-b.spendingsSum
       tx.executeSql(
         `UPDATE budget SET ${month}=?`,[JSON.stringify(b)],
@@ -212,8 +209,7 @@ db.transaction(tx=>{
       template[direction].splice(category,1)
       updateBudget()
       updateTemplate()
-      let nR={c:refresh.c+1}
-      setRefresh(nR)
+      
     }
    else{
     let b=JSON.parse(resultSet.rows._array[0][month])
@@ -281,7 +277,7 @@ db.transaction(tx=>{
       else if(resultSet.rows._array[0][`${months[new Date().getMonth()]}`]){
          setBudget(JSON.parse(resultSet.rows._array[0][`${months[new Date().getMonth()]}`]))
       }
-      alert(JSON.stringify(template))
+      
     }
   )
 })
@@ -328,6 +324,7 @@ db_setStates()
             }
             }}
             >
+              
                 <Tab.Screen name="home_page" children={()=><HomePage 
                 currency={currency} 
                 budget={budget} 
@@ -337,6 +334,7 @@ db_setStates()
                 updateTemplate={updateTemplate}
                 deleteCategory={deleteCategory}
                 language={language}
+                colorTheme={colorTheme}
                 />}
                   options={{
                     tabBarItemStyle:FooterStyle.button,
@@ -353,6 +351,7 @@ db_setStates()
                 refresh={refresh}
                 setRefresh={setRefresh}
                 language={language}
+                colorTheme={colorTheme}
                 />}
                   options={{
                     tabBarItemStyle:FooterStyle.button,
@@ -369,6 +368,7 @@ db_setStates()
                 refresh={refresh}
                 setRefresh={setRefresh}
                 language={language}
+                colorTheme={colorTheme}
                 />}
                 options={{
                   tabBarItemStyle:FooterStyle.button,
@@ -378,10 +378,12 @@ db_setStates()
                   )
                   }}/>
                 <Tab.Screen name='setting_page' children={()=><SettingPage 
+                currency={currency}
                 setCurrency={setCurrency}
                 db_updateRecord={db_updateRecord}
                 setLanguage={setLanguage}
                 language={language}
+                colorTheme={colorTheme}
                 />}
                   options={{
                     tabBarItemStyle:FooterStyle.button,

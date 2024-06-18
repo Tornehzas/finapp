@@ -13,9 +13,9 @@ import { months } from "../LOGIC/Calendar";
 import { sizes } from "../PAGES/styles";
 import { lang } from "../PAGES/languages";
 export function ModalComponent({language,budget,modalActive,selectedDirection,selectedPayInstrument,addTransaction}){
-  const [selectedYear, setSelectedYear]=useState(2007)
-  const [selectedMonth, setSelectedMonth]=useState(1)
-  const [selectedDay, setSelectedDay]=useState(2)
+  const [selectedYear, setSelectedYear]=useState(2006)
+  const [selectedMonth, setSelectedMonth]=useState(0)
+  const [selectedDay, setSelectedDay]=useState(1)
   const [modalSpendingsSelectedCategory, setModalSpendingsSelectedCategory]=useState(0)
   const [modalIncomesSelectedCategory, setModalIncomesSelectedCategory]=useState(0)
    return(
@@ -43,7 +43,7 @@ style={{
         marginTop:0,
         display:'flex',
         width:sizes.fullWidth,
-        height:sizes.fullHeight*0.57,
+        height:sizes.fullHeight*0.6,
         alignItems:'center',
         borderRadius:10,
         backgroundColor:'#112D41',
@@ -121,7 +121,7 @@ language={language}
          {budget[`${selectedDirection}`].map((el,index)=>{
           return(
         <Text 
-            style={{width:'100%',height:sizes.fullHeight*0.05,textAlign:'center',fontSize:30}}
+            style={{color:'white',width:'100%',height:sizes.fullHeight*0.05,textAlign:'center',fontSize:20/sizes.fontScale}}
             key={index}>{el.categoryName}</Text>
           )
          })}
@@ -154,7 +154,7 @@ language={language}
       dataA={0}
       keyboardType="numeric"
       placeholder="value"
-      fontSize={23}
+      fontSize={20/sizes.fontScale}
       onSubmitEditing={()=>{
         let newV=Number(this.dataA.toFixed(2))
         if(selectedDirection==='spendings'&&newV>0){
@@ -164,10 +164,11 @@ language={language}
         addTransaction(selectedDay,selectedMonth+1,selectedYear,selectedDirection,modalIncomesSelectedCategory,newV,selectedPayInstrument)      
         }
         
-        
+        this.dataA=0
         this.textInput.clear()
       }}
       style={{
+        color:'white',
         width:'100%',
         height:sizes.fullHeight*0.05,
         borderRadius:10,

@@ -7,7 +7,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Budget } from "../../LOGIC/Budget";
 import { calendar } from "../../LOGIC/Calendar";
 import { enablePromise, openDatabase } from "react-native-sqlite-storage";
-import { Button } from "react-native";
+import { Button,StatusBar } from "react-native";
 import Carousel from "react-native-snap-carousel";
 import { BarChart, LineChart} from 'react-native-chart-kit-with-pressable-bar-graph'
 import { months } from "../../LOGIC/Calendar";
@@ -15,12 +15,15 @@ import { Alert } from "react-native";
 import { sizes } from "../styles";
 import { height } from "deprecated-react-native-prop-types/DeprecatedImagePropType";
 import { lang } from "../languages";
-export function AnalyticsPage({budget, currency, db,deleteCategory,refresh,language}){
-  const [analyticsBudget, setAnalyticsBudget]=useState(new Budget())
-  const [selectedYear, setSelectedYear]=useState(2006)
-  const [selectedMonth,setSelectedMonth]=useState(0)
+
+
+export function AnalyticsPage({colorTheme,budget, currency, db,deleteCategory,refresh,language}){
+  const [analyticsBudget, setAnalyticsBudget]=useState(budget)
+  const [selectedYear, setSelectedYear]=useState(new Date().getFullYear())
+  const [selectedMonth,setSelectedMonth]=useState(new Date().getMonth())
   const [analyticsSums, setAnalyticsSums]=useState([0,0,0,0,0,0,0,0,0,0,0,0])
   const [selectedAnalyticsType,setSelectedAnalyticsType]=useState(0)
+  const [selectedDirection,setSelectedDirection]=useState('incomes')
 function updateAnalyticsSums(year){
   db.transaction(tx=>{
     tx.executeSql(
@@ -54,7 +57,6 @@ function updateAnalyticsBudget(year,month){
     )
   })
 }
- 
 const showConfirmDialog = (direction,index) => {
   return Alert.alert(
     "",
@@ -64,10 +66,9 @@ const showConfirmDialog = (direction,index) => {
         text: lang[language].yes,
         onPress: () => {
               deleteCategory(selectedYear,months[selectedMonth],direction,index)
-              analyticsBudget[direction].splice(index,1)
-              setAnalyticsBudget(analyticsBudget)
-              updateAnalyticsBudget(selectedYear,selectedMonth)
-              updateAnalyticsSums(selectedYear)
+              let bu=JSON.parse(JSON.stringify(analyticsBudget))
+              bu[direction].splice(index,1)
+              setAnalyticsBudget(bu)
         }
       },
       {
@@ -91,24 +92,26 @@ useEffect(()=>{
             end={{x:1,y:1}}
             style={HomePageStyle.gradient}
             >
+              <StatusBar style={colorTheme}/>
                 <Text style={HomePageStyle.header}>{lang[language].analytics}</Text>
 <View 
 style={{
   display:"flex",
-  height:sizes.fullHeight*0.04,
+  height:sizes.fullHeight*0.05,
   width:sizes.fullWidth,
   backgroundColor:'transparent',
   alignItems:'center',
 }}
 >
 <ScrollView 
+contentOffset={{x:0,y:sizes.fullHeight*0.05*(new Date().getFullYear()-2006)}}
 pagingEnabled={true}
 overScrollMode="never"
 showsVerticalScrollIndicator={false}
 onScrollEndDrag={(e)=>{
-setSelectedYear(calendar.years[Math.round(e.nativeEvent.contentOffset.y/40)])
-updateAnalyticsSums(calendar.years[Math.round(e.nativeEvent.contentOffset.y/40)])
-updateAnalyticsBudget(calendar.years[Math.round(e.nativeEvent.contentOffset.y/40)],selectedMonth)
+setSelectedYear(calendar.years[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05))])
+updateAnalyticsSums(calendar.years[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05))])
+updateAnalyticsBudget(calendar.years[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05))],selectedMonth)
 }}
 onSnapToItem={(i)=>{
   setSelectedYear(calendar.years[i])
@@ -117,12 +120,12 @@ onSnapToItem={(i)=>{
 }}
 style={{
   width:sizes.fullWidth,
-  height:sizes.fullHeight*0.04
+  height:sizes.fullHeight*0.05,
 }}
 >
   {calendar.years.map((year)=>{
    return(
-    <Text key={year} style={{height:sizes.fullHeight*0.04, fontSize:25, textAlign:'center'}}>{year}</Text>
+    <Text key={year} style={{color:"white",height:sizes.fullHeight*0.05, fontSize:20/sizes.fontScale, textAlign:'center'}}>{year}</Text>
    )
 })}
 </ScrollView>
@@ -180,7 +183,7 @@ contentContainerStyle={{alignItems:"center"}}
 </View>
 <View style={{
    marginTop:sizes.fullHeight*0.01,
-   height:sizes.fullHeight*0.04,
+   height:sizes.fullHeight*0.05,
    width:sizes.fullWidth,
    backgroundColor:'transparent',
    alignItems:'center',
@@ -191,132 +194,83 @@ overScrollMode="never"
 showsVerticalScrollIndicator={false}
 style={{
   width:sizes.fullWidth,
-  height:sizes.fullHeight*0.04, 
+  height:sizes.fullHeight*0.05, 
 }}
 contentContainerStyle={{alignItems:'center'}}
-onScrollEndDrag={(e)=>{setSelectedAnalyticsType(Math.round(e.nativeEvent.contentOffset.y/40))}}
+onScrollEndDrag={(e)=>{setSelectedAnalyticsType(Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05)))}}
 onSnapToItem={(i)=>{setSelectedAnalyticsType(i)}}
 >
-  <Text style={{fontSize:20, width:sizes.fullWidth,height:sizes.fullHeight*0.04,  textAlign:'center'}}>{lang[language].categories}</Text>
-  <Text style={{fontSize:20, width:sizes.fullWidth,height:sizes.fullHeight*0.04,  textAlign:'center'}}>{lang[language].payInstruments}</Text>
+  <Text style={{color:"white",fontSize:20/sizes.fontScale, width:sizes.fullWidth,height:sizes.fullHeight*0.05,  textAlign:'center'}}>{lang[language].categories}</Text>
+  <Text style={{color:"white",fontSize:20/sizes.fontScale, width:sizes.fullWidth,height:sizes.fullHeight*0.05,  textAlign:'center'}}>{lang[language].payInstruments}</Text>
 </ScrollView>
 </View>
 <View style={{ 
-  marginTop:sizes.fullHeight*0.01,
    height:sizes.fullHeight*0.05,
    width:sizes.fullWidth,
    backgroundColor:'transparent',
    alignItems:'center'}}>
-<Text style={{alignSelf:'flex-start',fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.04,position:'absolute',color:'lime'}}>{lang[language].incomes}</Text>
-<Text style={{alignSelf:'flex-end',fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.04,position:'absolute',color:'red'}}>{lang[language].spendings}</Text>
+<ScrollView 
+onScrollEndDrag={(e)=>{
+  if(e.nativeEvent.contentOffset.y/sizes.fullHeight*0.05===0){
+    setSelectedDirection('incomes')}
+  else{setSelectedDirection('spendings')}
+}}
+pagingEnabled={true}
+scrollEnabled={true}
+showsVerticalScrollIndicator={false}
+overScrollMode="never"
+contentContainerStyle={{
+  width:sizes.fullWidth,
+  backgroundColor:'transparent',
+  alignItems:'center',
+}}>
+<Text style={{fontSize:20/sizes.fontScale,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05,color:'lime'}}>{lang[language].incomes}</Text>
+<Text style={{fontSize:20/sizes.fontScale,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05,color:'red'}}>{lang[language].spendings}</Text>
+</ScrollView>
 </View>
 
 <View 
 style={{
   marginTop:sizes.fullHeight*0.01,
-  height:sizes.fullHeight*0.2,
   width:sizes.fullWidth,
-  backgroundColor:'transparent',
+  backgroundColor:'transparent',      
+  marginLeft:sizes.fullWidth*0.1,
+  height:sizes.fullHeight*0.25
 }}>
   {selectedAnalyticsType===0?
-    <View 
-    style={{
-      height:sizes.fullHeight*0.2,
-      width:sizes.fullWidth,
-      backgroundColor:'transparent',
-      alignItems:'center',
-    }}>
-    <ScrollView  
-    style={{
-      width:sizes.fullWidth/2,
-      height:sizes.fullHeight*0.26,
-      alignSelf:'flex-start',
-    position:'absolute'
-    }}
+    <ScrollView 
+    scrollEnabled={true} 
+    overScrollMode="never"
+    showsVerticalScrollIndicator={false}
     contentContainerStyle={{
       alignItems:"center",
+      width:sizes.fullWidth,
       }}>
-    {analyticsBudget.incomes.map((item,i)=>{return(
+    {analyticsBudget[selectedDirection].map((item,i)=>{return(
   <Pressable  key={i+1}
-  onLongPress={()=>{showConfirmDialog('incomes',i)}}
+  onLongPress={()=>{showConfirmDialog(selectedDirection,i)}}
   style={{
     height:sizes.fullHeight*0.05,
-      width:sizes.fullWidth/2,
-      textAlign:'center'
+    width:sizes.fullWidth,
   }}
   >
     <Text 
     style={{
-      fontSize:20,
+      color:"white",
+      fontSize:20/sizes.fontScale,
       height:sizes.fullHeight*0.05,
-      width:sizes.fullWidth/2,
-      textAlign:'center'
+      width:sizes.fullWidth,
     }} key={i}>{item.categoryName} {item.value}{currency}</Text></Pressable> 
   )})}
   </ScrollView>
-  <ScrollView 
-  style={{
-    width:sizes.fullWidth/2,
-    height:sizes.fullHeight*0.26,  
-    alignSelf:'flex-end',
-    position:'absolute'
-    }}
-    contentContainerStyle={{
-      alignItems:"center"
-      }}>
-    {analyticsBudget.spendings.map((item,i)=>{return(
-  <Pressable key={i+1}
-  onLongPress={()=>{showConfirmDialog('spendings',i)}}
-  style={{
-    height:sizes.fullHeight*0.05,
-      width:sizes.fullWidth/2,
-      textAlign:'center'
-  }}
-  >
-    <Text
-    style={{
-      fontSize:20,
-      height:sizes.fullHeight*0.05,
-      width:sizes.fullWidth/2,
-      textAlign:'center'
-    }} 
-    key={i}>{item.categoryName} {item.value}{currency}</Text>
-    </Pressable>  
-  )})}
-  </ScrollView>
-  </View>
 :
-  <View
-  style={{
-    marginTop:sizes.fullHeight*0.01,
-    height:sizes.fullHeight*0.2,
-    width:sizes.fullWidth,
-    backgroundColor:'transparent',
-    alignItems:'center'
-  }}
-  >
     <View style={{
-      alignSelf:"flex-start",
-      position:'absolute',
-      alignItems:'center',
-      width:sizes.fullWidth/2,
-      height:sizes.fullHeight*0.2
+      width:sizes.fullWidth,
+      height:sizes.fullHeight*0.3
     }}>
-    <Text style={{fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05}}>{lang[language].payments.card} {analyticsBudget.incomescardSum}{currency}</Text>
-    <Text style={{fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05}}>{lang[language].payments.cash} {analyticsBudget.incomescashSum}{currency}</Text>
-    <Text style={{fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05}}>{lang[language].payments.crypto} {analyticsBudget.incomescryptoSum}{currency}</Text>
-    </View>
-    <View style={{
-        alignSelf:"flex-end",
-        position:'absolute',
-        alignItems:'center',
-        width:sizes.fullWidth/2,
-        height:sizes.fullHeight*0.2
-    }}>
-    <Text style={{fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05}}>{analyticsBudget.spendingscardSum}{currency}</Text>
-    <Text style={{fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05}}>{analyticsBudget.spendingscashSum}{currency}</Text>
-    <Text style={{fontSize:20,textAlign:'center',width:sizes.fullWidth/2,height:sizes.fullHeight*0.05}}>{analyticsBudget.spendingscryptoSum}{currency}</Text>
-    </View>
+    <Text style={{color:"white",fontSize:20/sizes.fontScale,width:sizes.fullWidth,height:sizes.fullHeight*0.05}}>{lang[language].payments.card} {analyticsBudget[`${selectedDirection}cardSum`]}{currency}</Text>
+    <Text style={{color:"white",fontSize:20/sizes.fontScale,width:sizes.fullWidth,height:sizes.fullHeight*0.05}}>{lang[language].payments.cash} {analyticsBudget[`${selectedDirection}cashSum`]}{currency}</Text>
+    <Text style={{color:"white",fontSize:20/sizes.fontScale,width:sizes.fullWidth,height:sizes.fullHeight*0.05}}>{lang[language].payments.crypto} {analyticsBudget[`${selectedDirection}cryptoSum`]}{currency}</Text>
   </View>
   }
   

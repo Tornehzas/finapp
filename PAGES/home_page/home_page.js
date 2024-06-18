@@ -8,7 +8,7 @@ import Carousel from "react-native-snap-carousel";
 import {  Image } from "react-native";
 import GestureRecognizer from "react-native-swipe-gestures";
 import { payments } from "../../LOGIC/Payments";
-import { Dimensions } from "react-native";
+import { Dimensions,Appearance } from "react-native";
 import { Pressable } from "react-native";
 import { ModalComponent } from "../../COMPONENTS/ModalComponent";
 import { Transaction } from "../../LOGIC/Transaction";
@@ -22,7 +22,11 @@ import { Prompt } from "../../COMPONENTS/Prompt";
 import { Category } from "../../LOGIC/Category";
 import { sizes } from "../styles";
 import { lang } from "../languages";
-export function HomePage({language,currency,budget,updateBudget,addTransaction,template,updateTemplate,deleteCategory}){
+import { StatusBar } from "expo-status-bar";
+
+
+
+export function HomePage({colorTheme,language,currency,budget,updateBudget,addTransaction,template,updateTemplate,deleteCategory}){
 
 useEffect(()=>{
 {/*setData('budget',setBudget)*/}
@@ -66,15 +70,17 @@ function renderPayInstrument({item}){
         setModalActive(false)
     }}
     style={{
-      width:sizes.fullWidth*0.55,
-      alignSelf:'center'
+      width:sizes.fullWidth*0.5,
+      alignSelf:'center',
+
     }}
     ><Image id={`${item.name}`} style={{
           width:sizes.fullWidth*0.5, 
-          height:sizes.fullWidth*0.5,
+          height:sizes.fullWidth*0.4,
           display:'flex', 
           alignSelf:'center',
-        }} source={item.img}></Image>
+          resizeMode:'contain',
+        }} source={item.img[`${currency}`]||item.img}></Image>
         </GestureRecognizer>
     )
 }
@@ -82,16 +88,16 @@ function renderHomeTopPages({index}){
         return(
          <View 
          style={{
-            marginTop:sizes.fullHeight*0.005,
             width:sizes.fullWidth,
-            height:sizes.fullHeight*0.43,
+            height:sizes.fullHeight*0.46,
          }}
          >   
             <Text
             style={{
+              color:index===0?'red':'lime',
                 fontSize:20,
                 width:sizes.fullWidth,
-                height:sizes.fullHeight*0.03,
+                height:sizes.fullHeight*0.05,
                 textAlign:'center',
             }}
             >{index===0?lang[language].spendings:lang[language].incomes}</Text>
@@ -99,11 +105,15 @@ function renderHomeTopPages({index}){
               hasLegend={false}
         data={index===0?budget.spendings:budget.incomes}
            accessor="value" 
-            width={sizes.fullWidth*0.65}
-            height={sizes.fullWidth*0.65}
+            width={sizes.fullWidth*0.62}
+            height={sizes.fullWidth*0.62}
+            center={[sizes.fullWidth*0.62*0.25,-sizes.fullWidth*0.62*0.1]}
             fromZero={true}
            avoidFalseZero={true}
            style={{
+            alignItems:'center',
+            height:sizes.fullWidth*0.5,
+             width:sizes.fullWidth*0.5,
             marginTop:sizes.fullHeight*0.01,
             alignSelf:'center',
             backgroundColor:"grey",
@@ -113,33 +123,34 @@ function renderHomeTopPages({index}){
             color:(opacity=1)=>`rgba(25,25,25,${opacity})`,
         }}
            />
+          <View style={{width:sizes.fullWidth,height:sizes.fullHeight*0.09}}>
         <ScrollView
         onSnapToItem={(i)=>{
             if(selectedDirection==='spendings'&&budget.spendings[i]){
                 budget[selectedDirection][spendingsSelectedCategory].color='grey'
-                budget[selectedDirection][i].color='lime'
+                budget[selectedDirection][i].color='#bf2222'
                 setSpendingsSelectedCategory(i)
                 updateBudget()
             }
             else if (selectedDirection==='incomes'&&budget.incomes[i]) {
                 budget[selectedDirection][incomesSelectedCategory].color='grey'
-                budget[selectedDirection][i].color='lime'
+                budget[selectedDirection][i].color='#0abb49'
                 setIncomesSelectedCategory(i)
                 updateBudget()
             }
         } 
         }
         onScrollEndDrag={(e)=>{
-        if(selectedDirection==='spendings'&&budget.spendings[Math.round(e.nativeEvent.contentOffset.y/70)]){
-            budget[selectedDirection][spendingsSelectedCategory].color='grey'
-            budget[selectedDirection][Math.round(e.nativeEvent.contentOffset.y/70)].color='lime'
-            setSpendingsSelectedCategory(Math.round(e.nativeEvent.contentOffset.y/70))
+        if(selectedDirection==='spendings'&&budget.spendings[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.09))]){
+          if(budget[selectedDirection][spendingsSelectedCategory]){budget[selectedDirection][spendingsSelectedCategory].color='grey'}
+            budget[selectedDirection][Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.09))].color='#bf2222'
+            setSpendingsSelectedCategory(Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.09)))
             updateBudget()
         }
-        else if (selectedDirection==='incomes'&&budget.incomes[Math.round(e.nativeEvent.contentOffset.y/70)]){
-            budget[selectedDirection][incomesSelectedCategory].color='grey'
-            budget[selectedDirection][Math.round(e.nativeEvent.contentOffset.y/70)].color='lime'
-            setIncomesSelectedCategory(Math.round(e.nativeEvent.contentOffset.y/70))
+        else if (selectedDirection==='incomes'&&budget.incomes[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.09))]){
+          if(budget[selectedDirection][incomesSelectedCategory]){budget[selectedDirection][incomesSelectedCategory].color='grey'}
+            budget[selectedDirection][Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.09))].color='#0abb49'
+            setIncomesSelectedCategory(Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.09)))
             updateBudget()
         }
     }}
@@ -150,7 +161,7 @@ function renderHomeTopPages({index}){
         pagingEnabled={true}
         showsVerticalScrollIndicator={false}
          contentContainerStyle={{
-            alignItems:'center'
+            alignItems:'center',
          }}
            >
              {budget[`${index===0?'spendings':'incomes'}`].map((item,i)=>{
@@ -163,6 +174,7 @@ return(
                 width:sizes.fullWidth,
                 backgroundColor:'transparent',
                 alignItems:'center',
+                
               }}>     
       <Pressable
       style={{
@@ -179,7 +191,7 @@ return(
             color:'white',
             textAlign:'center',
             lineHeight:sizes.fullHeight*0.039,
-            fontSize:25,
+            fontSize:20/sizes.fontScale,
             height:sizes.fullHeight*0.09,
             width:sizes.fullWidth,
             }}>
@@ -194,18 +206,20 @@ return(
                 setPromptActive(true)
             }}
              style={{
-                height:sizes.fullHeight*0.09,
+                height:sizes.fullHeight*0.1,
                 alignItems:'center',
                 width:sizes.fullWidth
              }} 
 ><Text style={{
-  fontSize:30,
+  color:"white",
+  fontSize:25/sizes.fontScale,
   textAlign:'center',
-  height:sizes.fullHeight*0.09,
+  height:sizes.fullHeight*0.1,
   }}>{lang[language].add}
   </Text>
              </Pressable>
         </ScrollView>
+        </View>
            </View>
         )
 }
@@ -221,7 +235,7 @@ return(
             end={{x:1,y:1}}
             style={HomePageStyle.gradient}
         >
-
+        <StatusBar style={colorTheme}/>
         <Text style={HomePageStyle.header}>{lang[language].budget} {String(budget.sum.toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, " ")||0}{currency}</Text>
         
         
@@ -249,8 +263,8 @@ return(
             if(i===1){setSelectedDirection('incomes')}
             }}
         onScrollEndDrag={(e)=>{
-            if(Math.round(e.nativeEvent.contentOffset.x/400)===0){setSelectedDirection('spendings')}
-            if(Math.round(e.nativeEvent.contentOffset.x/400)===1){setSelectedDirection('incomes')}
+            if(Math.round(e.nativeEvent.contentOffset.x/sizes.fullWidth)===0){setSelectedDirection('spendings')}
+            if(Math.round(e.nativeEvent.contentOffset.x/sizes.fullWidth)===1){setSelectedDirection('incomes')}
             }}
             contentContainerStyle={{
                 alignItems:'center',
@@ -281,16 +295,16 @@ language={language}
               data={0}
               keyboardType="numeric"
               placeholder={lang[language].value}
-              fontSize={25}
+              fontSize={20/sizes.fontScale}
               onSubmitEditing={()=>{
                 let newV=Number(Number(this.data).toFixed(2))
                 if(selectedDirection==="spendings"&&budget.spendings[spendingsSelectedCategory]&&newV>0){
                 addTransaction(new Date().getDate(),new Date().getMonth()+1,new Date().getFullYear(),selectedDirection,spendingsSelectedCategory,newV,selectedPayInstrument)
-                budget[selectedDirection][spendingsSelectedCategory].color='lime'
+                budget[selectedDirection][spendingsSelectedCategory].color='#bf2222'
                 }
                 else if(selectedDirection==='incomes'&&budget.incomes[incomesSelectedCategory]&&newV>0){
-                addTransaction(new Date().getDate(),Date().getMonth()+1,new Date().getFullYear(),selectedDirection,incomesSelectedCategory,newV,selectedPayInstrument)
-                budget[selectedDirection][incomesSelectedCategory].color='lime'
+                addTransaction(new Date().getDate(),new Date().getMonth()+1,new Date().getFullYear(),selectedDirection,incomesSelectedCategory,newV,selectedPayInstrument)
+                budget[selectedDirection][incomesSelectedCategory].color='#0abb49'
                 }
                 this.data=0
                 this.TextInput.clear()
@@ -299,9 +313,10 @@ language={language}
                 backgroundColor:'transparent',
                 width:sizes.fullWidth,
                 height:sizes.fullHeight*0.05,
-                marginTop:sizes.fullHeight*0.55,
+                marginTop:sizes.fullHeight*0.58,
                 textAlign:'center',
-                position:'absolute'
+                position:'absolute',
+                color:'white'
               }}
         >
         </TextInput>
@@ -311,7 +326,7 @@ language={language}
         <Carousel
         enableSnap={true}
         data={payments}
-        onScrollEndDrag={(e)=>{setSelectedPayInstrument(Math.round(e.nativeEvent.contentOffset.x/200))}}
+        onScrollEndDrag={(e)=>{setSelectedPayInstrument(Math.round(e.nativeEvent.contentOffset.x/(sizes.fullWidth*0.55)))}}
         onSnapToItem={(i)=>{setSelectedPayInstrument(i)}}
            renderItem={renderPayInstrument}
            itemWidth={sizes.fullWidth*0.55}
@@ -319,7 +334,7 @@ language={language}
            sliderWidth={sizes.fullWidth}
            inactiveSlideOpacity={0}
            containerCustomStyle={{
-                marginTop:sizes.fullHeight*0.63,
+                marginTop:sizes.fullHeight*0.65,
                 position:'absolute',
         }}
         contentContainerStyle={{alignItems:'center'}}

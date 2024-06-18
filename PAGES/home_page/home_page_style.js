@@ -7,7 +7,9 @@ import { sizes } from "../styles";
 export const HomePageStyle=StyleSheet.create({
     header:{
      alignSelf:'flex-start',
-     fontSize:30,
+     fontSize:25,
+     color:"white",
+     marginTop:sizes.fullHeight*0.045
     },
     page:{
      display:'flex',
@@ -17,10 +19,9 @@ export const HomePageStyle=StyleSheet.create({
     },
     gradient:{
         width:sizes.fullWidth,
-        height:sizes.fullHeight,
+        height:sizes.fullHeightS,
         alignItems:'center',
         paddingLeft:sizes.fullWidth*0.04,
         paddingRight:sizes.fullWidth*0.04,
-        paddingTop:sizes.fullHeight*0.05,
     }
 })

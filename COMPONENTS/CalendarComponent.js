@@ -27,9 +27,10 @@ selectedIndex={0}
 renderItem={(item)=>{
    return(<Text
     style={{
+        color:'white',
         width:sizes.fullWidth*0.89,
         height:sizes.fullHeight*0.05,
-        fontSize:23,
+        fontSize:20/sizes.fontScale,
         textAlign:'center',
         textAlignVertical:'center'
     }}
@@ -48,9 +49,10 @@ selectedIndex={0}
 renderItem={(item,index)=>{
    return(<Text
     style={{
+        color:"white",
         width:sizes.fullWidth*0.89,
         height:sizes.fullHeight*0.05,
-        fontSize:23,
+        fontSize:20/sizes.fontScale,
         textAlign:'center',
         textAlignVertical:'center'
     }}
@@ -69,9 +71,10 @@ selectedIndex={0}
 renderItem={(item)=>{
    return(<Text
     style={{
+        color:"white",
         width:sizes.fullWidth*0.89,
         height:sizes.fullHeight*0.05,
-        fontSize:23,
+        fontSize:20/sizes.fontScale,
         textAlign:'center',
         textAlignVertical:'center'
     }}

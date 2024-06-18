@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "yeoman",
-    "slug": "yeoman",
+    "name": "Tomerchant",
+    "slug": "Tomerchant",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,18 +15,26 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tornehzas.tomerchant"
     },
     "android": {
+      "userInterfaceStyle":"automatic",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "softwareKeyboardLayoutMode":"pan",
-      "windowSoftInputMode":"pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "windowSoftInputMode": "pan",
+      "package": "com.tornehzas.tomerchant"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "080e9f35-e911-45d9-ad6e-ae6b4d27dd5a"
+      }
     }
   }
 }

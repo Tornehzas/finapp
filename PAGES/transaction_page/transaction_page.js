@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ScrollView, View, Text } from "react-native";
 import Carousel from "react-native-snap-carousel";
 import { HomePageStyle } from "../home_page/home_page_style";
-import { Pressable } from "react-native";
+import { Pressable,StatusBar } from "react-native";
 import { Alert } from "react-native";
 import { months } from "../../LOGIC/Calendar";
 import { calendar } from "../../LOGIC/Calendar";
@@ -12,11 +12,10 @@ import { useEffect } from "react";
 import { sizes } from "../styles";
 import { lang } from "../languages";
 
-
-export function TransactionPage({budget,currency,db,deleteTransaction,refresh,language}){
-  const [selectedYear, setSelectedYear]=useState(2006)
-  const [selectedMonth,setSelectedMonth]=useState('jan')
-  const [selectedBudget,setSelectedBudget]=useState(new Budget())    
+export function TransactionPage({colorTheme,budget,currency,db,deleteTransaction,refresh,language}){
+  const [selectedYear, setSelectedYear]=useState(new Date().getFullYear())
+  const [selectedMonth,setSelectedMonth]=useState(months[new Date().getMonth()])
+  const [selectedBudget,setSelectedBudget]=useState(budget)    
   const showConfirmDialog = (direction,category,i) => {
         return Alert.alert(
           "",
@@ -61,27 +60,29 @@ export function TransactionPage({budget,currency,db,deleteTransaction,refresh,la
               height:sizes.fullHeight,
               alignItems:'center'
             }}>
-                <Text style={{height:sizes.fullHeight*0.05, fontSize:25, textAlign:'center',color:index===0?'red':'lime'}}>{index===0?lang[language].spendings:lang[language].incomes}</Text>
+                <Text style={{height:sizes.fullHeight*0.05, fontSize:20/sizes.fontScale, textAlign:'center',color:index===0?'red':'lime'}}>{index===0?lang[language].spendings:lang[language].incomes}</Text>
+                <View style={{
+                  width:sizes.fullWidth,
+                  height:sizes.fullHeight*0.5
+                }}>
                 <ScrollView 
                 showsVerticalScrollIndicator={false}
                 overScrollMode="never"
                 style={{
               width:sizes.fullWidth,
-              height:sizes.fullHeight,
                 }}
                 contentContainerStyle={{alignItems:'center'}}>
                   {selectedBudget[`${index===0?'spendings':'incomes'}`].map((category,i)=>{
                     return(
-                      <View style={{
+                      <View key={i+200}style={{
                         width:sizes.fullWidth,
-                        height:sizes.fullHeight,
                         alignItems:"center"}}>
-                        <Text key={i} style={{height:sizes.fullHeight*0.05, fontSize:25, textAlign:'center'}}>{category.categoryName}</Text>
+                        <Text key={i} style={{color:"white",height:sizes.fullHeight*0.05, fontSize:20/sizes.fontScale, textAlign:'center'}}>{category.categoryName}</Text>
                         {category.transactions.map((transaction,ind)=>{
                           return(
-                          <Pressable key={ind}style={{height:sizes.fullHeight*0.05, fontSize:25, textAlign:'center'}} 
+                          <Pressable key={ind+100}style={{height:sizes.fullHeight*0.05, fontSize:20/sizes.fontScale, textAlign:'center'}} 
                           onPress={()=>{showConfirmDialog(`${index===0?'spendings':'incomes'}`,i,ind)}}> 
-                            <Text key={ind+1} style={{height:sizes.fullHeight*0.05, fontSize:25, textAlign:'center'}}>
+                            <Text key={ind+1} style={{color:"white",height:sizes.fullHeight*0.05, fontSize:20/sizes.fontScale, textAlign:'center'}}>
 {`${transaction.date.day}/${transaction.date.month}/${transaction.date.year}`}  {transaction.value}{currency} {lang[language].payments[transaction.payInstrument]}
                             </Text>
                             </Pressable>
@@ -91,6 +92,7 @@ export function TransactionPage({budget,currency,db,deleteTransaction,refresh,la
                     )
                   })}
                    </ScrollView>
+                   </View>
             </View>
         )
   }
@@ -105,6 +107,7 @@ export function TransactionPage({budget,currency,db,deleteTransaction,refresh,la
               end={{x:1,y:1}}
               style={HomePageStyle.gradient}
               >
+                <StatusBar style={colorTheme}/>
                   <Text style={HomePageStyle.header}>{lang[language].transactions}</Text>
                   <View 
                   style={{
@@ -115,14 +118,15 @@ export function TransactionPage({budget,currency,db,deleteTransaction,refresh,la
   backgroundColor:'transparent',
   alignItems:'center'}}>
                   <ScrollView
-
+contentOffset={{x:0,y:sizes.fullHeight*0.05*(new Date().getFullYear()-2006)}}
 pagingEnabled={true}
 overScrollMode="never"
+showsVerticalScrollIndicator={false}
 style={{  width:sizes.fullWidth,
   height:sizes.fullHeight*0.05}}
 onScrollEndDrag={(e)=>{
-setSelectedYear(calendar.years[Math.round(e.nativeEvent.contentOffset.y/40)])
-changeSelectedBudget(calendar.years[Math.round(e.nativeEvent.contentOffset.y/40)],selectedMonth)
+setSelectedYear(calendar.years[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05))])
+changeSelectedBudget(calendar.years[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05))],selectedMonth)
 }}
 onSnapToItem={(i)=>{
   changeSelectedBudget(calendar.years[i],selectedMonth)
@@ -131,7 +135,7 @@ onSnapToItem={(i)=>{
 >
   {calendar.years.map((year)=>{
    return(
-    <Text key={year}style={{height:sizes.fullHeight*0.05, fontSize:25, textAlign:'center'}}>{year}</Text>
+    <Text key={year}style={{color:"white",height:sizes.fullHeight*0.05, fontSize:20, textAlign:'center'}}>{year}</Text>
    )
 })}
                   </ScrollView>
@@ -145,14 +149,15 @@ onSnapToItem={(i)=>{
                     alignItems:'center'
                   }}>
                   <ScrollView 
-
+contentOffset={{x:0,y:sizes.fullHeight*0.05*(new Date().getMonth())}}
+showsVerticalScrollIndicator={false}
 pagingEnabled={true}
 overScrollMode="never"
 style={{width:sizes.fullWidth,
   height:sizes.fullHeight*0.05}}
 onScrollEndDrag={(e)=>{
-setSelectedMonth(months[Math.round(e.nativeEvent.contentOffset.y/40)])
-changeSelectedBudget(selectedYear,months[Math.round(e.nativeEvent.contentOffset.y/40)])
+setSelectedMonth(months[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05))])
+changeSelectedBudget(selectedYear,months[Math.round(e.nativeEvent.contentOffset.y/(sizes.fullHeight*0.05))])
 }}
 onSnapToItem={(i)=>{
   setSelectedMonth(months[i])
@@ -161,7 +166,7 @@ onSnapToItem={(i)=>{
 >
   {months.map((month,i)=>{
    return(
-    <Text key={i} style={{height:sizes.fullHeight*0.05, fontSize:25, textAlign:'center'}}>{lang[language].monthsShort[i]}</Text>
+    <Text key={i} style={{color:"white",height:sizes.fullHeight*0.05, fontSize:20/sizes.fontScale, textAlign:'center'}}>{lang[language].monthsShort[i]}</Text>
    )
 })}
                    </ScrollView>
